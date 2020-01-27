@@ -1,0 +1,486 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Furious and Fast</title>
+	<link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
+	<style>
+		body
+		{
+			margin: 0;
+			padding: 0;
+			font-size: 0;
+		}
+		canvas
+		{
+			width: 100%;
+			height: 100%;
+		}
+        div
+		{
+			min-width: 200px;
+            height: auto;
+			top: 30px;
+            left: 30px;
+			position: absolute;
+            font: 25px CenturyGothic;
+            color: black;
+            background-color: white;
+            border: 3px;
+			border-style: dotted;
+            border-color: red;
+            opacity: 0.45;
+        }
+	</style>
+</head>
+<body>
+
+	<div id="data">COINS: 0<br>ROUND: 0</div>
+
+	<script src="js/three.min.js"></script>
+	<script>
+		var WIDTH = window.innerWidth;
+		var HEIGHT = window.innerHeight;
+		
+		var player = prompt("Please enter your name: ", "Player1");
+		if (player == null || player == "")
+			player = "Player1";
+
+		document.addEventListener('keydown', onDocumentKeyDown, false);
+		document.addEventListener('keyup', onDocumentKeyUp, false);
+
+		var left, right, up, down;
+		var speed;
+		
+		function onDocumentKeyUp(event)
+		{
+			event = event || window.event;
+			var keycode = event.keyCode;
+			switch(keycode)
+			{
+				case 37:
+					console.log("left up");
+					left = false;
+					speed = false;
+					break;
+				case 38:
+					console.log("up up");
+					up = false;
+					speed = false;
+					break;
+				case 39:
+					console.log("right up");
+					right = false;
+					speed = false;
+					break;
+				case 40:
+					console.log("down up");
+					down = false;
+					speed = false;
+					break;
+			}
+		}
+		
+		function onDocumentKeyDown(event)
+		{
+			event = event || window.event;
+			var keycode = event.keyCode;
+			switch(keycode)
+			{
+				case 37:
+					console.log("left down");
+					left = true;
+					speed = true;
+					break;
+				case 38:
+					console.log("up down");
+					up = true;
+					speed = true;
+					break;
+				case 39:
+					console.log("right down");
+					right = true;
+					speed = true;
+					break;
+				case 40:
+					console.log("down down");
+					down = true;
+					speed = true;
+					break;
+			}
+		}       
+			
+		var renderer = new THREE.WebGLRenderer({antialias: true});
+		renderer.setSize(WIDTH, HEIGHT);
+		renderer.setClearColor(0xDDDDDD, 1);
+		document.body.appendChild(renderer.domElement);
+
+		var scene = new THREE.Scene();
+
+		var camera = new THREE.PerspectiveCamera(50, WIDTH/HEIGHT, 0.1, 10000);
+		camera.position.x = 13;
+		camera.position.z = 50;
+		scene.add(camera);
+
+		// Samochód
+		var Texture5 = new THREE.TextureLoader().load("images/car.png");
+		Texture5.wrapS = THREE.RepeatWrapping;
+		Texture5.wrapT = THREE.RepeatWrapping;
+		Texture5.repeat.set(1, 1);
+				
+		var Material5 = new THREE.MeshBasicMaterial({map: Texture5, side: THREE.DoubleSide});
+		Material5.transparent = true;
+		var Geometry5 = new THREE.PlaneGeometry(20, 20, 1, 1);
+		var car = new THREE.Mesh(Geometry5, Material5);
+		car.rotation.set(0.51, 0, 0);
+		car.position.x = 13;
+		car.position.y = 8;
+		car.position.z = 1.5;
+		scene.add(car);
+
+		var light = new THREE.PointLight(0xFFFFFF);
+		light.position.set(-10, 15, 50);
+		scene.add(light);
+			
+		// Droga
+		var Texture = new THREE.TextureLoader().load("images/road.jpg");
+		Texture.wrapS = THREE.RepeatWrapping;
+		Texture.wrapT = THREE.RepeatWrapping;
+		Texture.repeat.set(2, 7);
+				
+		var Material = new THREE.MeshBasicMaterial({map: Texture, side: THREE.DoubleSide});
+		var Geometry = new THREE.PlaneGeometry(150, 2000, 1, 1);
+		var road = new THREE.Mesh(Geometry, Material); 
+		road.rotation.set(90, 0, 0);
+		road.material.map.offset.y = 1.5;
+		scene.add(road);
+
+		// Blokada
+		var Texture2 = new THREE.TextureLoader().load("images/barrier.png");
+		Texture2.wrapS = THREE.RepeatWrapping;
+		Texture2.wrapT = THREE.RepeatWrapping;
+		Texture2.repeat.set(1, 1);
+
+		var Material2 = new THREE.MeshBasicMaterial({map: Texture2, side: THREE.DoubleSide});
+		Material2.transparent = true;
+		var Geometry2 = new THREE.PlaneGeometry(20, 20, 1, 1);
+		var barrier = new THREE.Mesh(Geometry2, Material2);
+
+		barrier.position.y = 97;
+		barrier.position.z = -180;
+		barrier.position.x = Math.floor(Math.random() * 125) - 62;
+		scene.add(barrier);
+		
+		// Dziura
+		var Texture6 = new THREE.TextureLoader().load("images/hole.png");
+		Texture6.wrapS = THREE.RepeatWrapping;
+		Texture6.wrapT = THREE.RepeatWrapping;
+		Texture6.repeat.set(1, 1);
+
+		var Material6 = new THREE.MeshBasicMaterial({map: Texture6, side: THREE.DoubleSide});
+		Material6.transparent = true;
+		var Geometry6 = new THREE.PlaneGeometry(35, 12, 1, 1);
+        var hole = new THREE.Mesh(Geometry6, Material6);
+
+		hole.position.y = 90;
+		hole.position.z = -180;
+		do
+			hole.position.x = Math.floor(Math.random() * 125) - 62;
+		while (hole.position.x > barrier.position.x - 17 && hole.position.x < barrier.position.x + 17);
+		scene.add(hole);
+		
+		// Coin
+		var Texture9 = new THREE.TextureLoader().load("images/coin.png");
+		Texture9.wrapS = THREE.RepeatWrapping;
+		Texture9.wrapT = THREE.RepeatWrapping;
+		Texture9.repeat.set(1, 1);
+
+		var Material9 = new THREE.MeshBasicMaterial({map: Texture9, side: THREE.DoubleSide});
+		Material9.transparent = true;
+		var Geometry9 = new THREE.PlaneGeometry(8, 8, 1, 1);
+        var coin = new THREE.Mesh(Geometry9, Material9);
+
+		coin.position.y = 97;
+		coin.position.z = -180;
+		do
+			coin.position.x = Math.floor(Math.random() * 125) - 62;
+		while (coin.position.x > barrier.position.x - 17 && coin.position.x < barrier.position.x + 17);
+		scene.add(coin);
+		
+		coin.visible = false;
+		
+		// Checkpoint
+		var Texture7 = new THREE.TextureLoader().load("images/pennant.png");
+		Texture7.wrapS = THREE.RepeatWrapping;
+		Texture7.wrapT = THREE.RepeatWrapping;
+		Texture7.repeat.set(1, 1);
+
+		var Material7 = new THREE.MeshBasicMaterial({map: Texture7, side: THREE.DoubleSide});
+		Material7.transparent = true;
+		var Geometry7 = new THREE.PlaneGeometry(20, 20, 1, 1);
+		var checkpoint_left = new THREE.Mesh(Geometry7, Material7);
+
+		checkpoint_left.position.y = 100;
+		checkpoint_left.position.z = -180;
+		checkpoint_left.position.x = -81;
+		scene.add(checkpoint_left);
+		
+		checkpoint_left.rotation.y = Math.PI;
+		
+		var Texture8 = new THREE.TextureLoader().load("images/pennant.png");
+		Texture8.wrapS = THREE.RepeatWrapping;
+		Texture8.wrapT = THREE.RepeatWrapping;
+		Texture8.repeat.set(1, 1);
+
+		var Material8 = new THREE.MeshBasicMaterial({map: Texture8, side: THREE.DoubleSide});
+		Material8.transparent = true;
+		var Geometry8 = new THREE.PlaneGeometry(20, 20, 1, 1);
+		var checkpoint_right = new THREE.Mesh(Geometry8, Material8);
+
+		checkpoint_right.position.y = 100;
+		checkpoint_right.position.z = -180;
+		checkpoint_right.position.x = 81;
+		scene.add(checkpoint_right);
+
+		// Piasek
+		var Texture4 = new THREE.TextureLoader().load("images/sand.jpg");
+		Texture4.wrapS = THREE.RepeatWrapping;
+		Texture4.wrapT = THREE.RepeatWrapping;
+		Texture4.repeat.set(1, 30);
+
+		var Material4 = new THREE.MeshBasicMaterial({map: Texture4, side: THREE.DoubleSide});
+		var Geometry4 = new THREE.PlaneGeometry(100, 2000, 1, 1);
+		var sand_left = new THREE.Mesh(Geometry4, Material4);
+		sand_left.rotation.set(90, 0, 0);
+		sand_left.position.x = -125;
+		sand_left.material.map.offset.y = 1.5;
+		scene.add(sand_left);
+
+		var Texture3 = new THREE.TextureLoader().load("images/sand.jpg");
+		Texture3.wrapS = THREE.RepeatWrapping;
+		Texture3.wrapT = THREE.RepeatWrapping;
+		Texture3.repeat.set(1, 30);
+
+		var Material3 = new THREE.MeshBasicMaterial({map: Texture3, side: THREE.DoubleSide});
+		var Geometry3 = new THREE.PlaneGeometry(100, 2000, 1, 1);
+		var sand_right = new THREE.Mesh(Geometry3, Material3);
+		sand_right.rotation.set(90, 0, 0);
+		sand_right.position.x = 125;
+		sand_right.material.map.offset.y = 1.5;
+		scene.add(sand_right);
+
+		var a = 0;
+		
+		// Zegar
+		var clock = new THREE.Clock;
+		dt=clock.getDelta();
+		
+		var speed2 = 0, speed3 = 0;
+		
+		var round_count = 0;
+		var coins_count = 0;
+		
+		var coin_check = 0;
+		var hole_check = 0;
+		var checkpoint_check = 0;
+		
+		var which = 0;  // dziura (0) czy coin (1)
+		
+		function tasks()
+		{
+			if(hole.position.x > car.position.x - 11 && hole.position.x < car.position.x + 11 && which == 0)
+			{
+				if(hole.position.y > car.position.y - 5 && hole.position.y < car.position.y + 5)
+				{
+					if(hole_check == 0)
+					{
+						if(coins_count>=2)
+							coins_count-=2;
+						else
+							coins_count=0;
+						hole_check = 1;
+					}
+				}
+			}
+			if(coin.position.x > car.position.x - 10 && coin.position.x < car.position.x + 10 && which == 1)
+			{
+				if(coin.position.y > car.position.y - 2 && coin.position.y < car.position.y + 2)
+				{
+					if(coin_check == 0)
+					{
+						coins_count++;
+						coin_check = 1;
+					}
+					coin.visible = false;
+				}
+			}
+			try
+			{
+				if(barrier.position.x > car.position.x - 13 && barrier.position.x < car.position.x + 13)
+				{
+					if(barrier.position.y > car.position.y - 3 && barrier.position.y < car.position.y + 3)
+					{
+						speed2 = 0;
+						speed3 = 0;
+						throw err;
+					}
+				}
+			}
+			catch(err)
+			{
+				if(!alert("GAME OVER\nYou hit the barrier!\nYour result: " + coins_count))
+					setTimeout("location.reload(true);", 0);
+			}
+		}
+			
+		function render()
+		{
+			requestAnimationFrame(render);
+			
+			document.getElementById("data").innerHTML = "PLAYER: " + player + "<br/>" + "COINS: " + coins_count + "<br/>" + "ROUND: " + round_count;
+			
+			if(round_count % 10 == 0 && round_count!=0)
+			{
+				checkpoint_left.visible = true;
+				checkpoint_right.visible = true;
+				if(checkpoint_check == 0)
+					coins_count+=10;
+				checkpoint_check=1;
+			}
+			else
+			{
+				checkpoint_left.visible = false;
+				checkpoint_right.visible = false;
+			}
+			
+			if(left == true && speed2 > -0.65 && camera.position.x >= -50)
+				speed2 -= 0.02;
+			if(left == false && speed2 < 0)
+				speed2 += 0.02;
+			if(right == true && speed2 < 0.65 && camera.position.x <= 50)
+				speed2 += 0.02;
+			if(right == false && speed2 > 0)
+			{
+				speed2 -= 0.02;
+				if (speed2 < -0.01)
+					speed2 = 0;
+			}
+			if(up == true && speed3 < 0.65)
+			{
+				if(round_count == 0)
+					round_count++;
+				speed3 += 0.0015;
+			}
+			if(up == false && speed3 > 0)
+			{
+				speed3 -= 0.001;
+				if (speed3 < 0.01)
+					speed3 = 0;
+			}
+			if(down == true && speed3 > 0)
+				speed3 -= 0.0035;
+			if(down == false && speed3 < 0)
+				speed3 += 0.001;
+				
+			if(barrier.position.y < 0)
+			{
+				barrier.position.y = 31;
+                barrier.position.z = -50;
+				var pos;
+				do
+					pos = Math.floor(Math.random() * 125) - 62;
+				while (pos > hole.position.x - 7 && pos < hole.position.x + 7);
+                barrier.position.x = pos;
+            }
+			
+            if (hole.position.y < 0)
+			{
+				hole.position.y = 25;
+                hole.position.z = -50;
+                var pos;
+				do
+					pos = Math.floor(Math.random() * 125) - 62;
+				while (pos > barrier.position.x - 17 && pos < barrier.position.x + 17);
+				hole.position.x = pos;
+				hole_check = 0;
+            }
+			
+			if (coin.position.y < 0)
+			{
+				coin.position.y = 32;
+                coin.position.z = -50;
+                var pos;
+				do
+					pos = Math.floor(Math.random() * 125) - 62;
+				while (pos > barrier.position.x - 17 && pos < barrier.position.x + 17);
+				coin.position.x = pos;
+				var draw = Math.floor(Math.random() * 1000) + 1;
+				if(draw>350)
+				{
+					which = 0;
+					hole.visible = true;
+					coin.visible = false;
+				}
+				else
+				{
+					which = 1;
+					hole.visible = false;
+					coin.visible = true;
+				}
+				coin_check = 0;
+            }
+			
+			if (checkpoint_right.position.y < 0)
+			{
+				checkpoint_left.position.y = 35;
+				checkpoint_right.position.y = 35;
+				checkpoint_left.position.z = -50;
+				checkpoint_right.position.z = -50;
+				checkpoint_left.position.x = -81;
+				checkpoint_right.position.x = 81;
+				round_count++;
+				checkpoint_check = 0;
+            }
+			
+			if(camera.position.x <= -62)
+				speed2 = 0.01;
+			if(camera.position.x >= 62)
+				speed2 = -0.01
+
+			if(speed3 == 0)
+				speed2 = 0;
+				
+			car.position.x += speed2;
+			camera.position.x += speed2;
+			camera.position.z = 60;
+			camera.rotation.set(0, 0, 0);
+
+			// poruszanie się drogi
+			road.material.map.offset.y -= speed3 / 4;
+
+			// poszuszanie się otoczenia drogi
+			sand_right.material.map.offset.y -= speed3 / 4;
+			sand_left.material.map.offset.y -= speed3 / 4;
+
+			barrier.position.y -= speed3 / 2;
+			barrier.position.z += speed3;
+			
+			hole.position.y -= speed3 / 2;
+			hole.position.z += speed3;
+			
+			coin.position.y -= speed3 / 2;
+			coin.position.z += speed3;
+			
+			checkpoint_left.position.y -= speed3 / 2;
+			checkpoint_left.position.z += speed3;
+			checkpoint_right.position.y -= speed3 / 2;
+			checkpoint_right.position.z += speed3;
+			
+			renderer.render(scene, camera);
+
+			tasks();
+		}
+		render();
+	</script>
+</body>
+</html>
